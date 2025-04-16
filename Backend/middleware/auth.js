@@ -1,3 +1,12 @@
+import jwt from 'jsonwebtoken'
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs/promises';
+
+
+//for javascript
+
 const extractBasicAuthHeaders = (header) => {
     if (header && header.startsWith('Basic ')) {
         // Extract the Base64 encoded part (removing the 'Basic ' prefix)
@@ -32,3 +41,34 @@ const extractBasicAuthHeaders = (header) => {
 //         return [email, password];
 //     }
 // }
+
+export const generateAccessToken = (payload) =>{
+    return jwt.sign(payload,process.env.SECRET_KEY , { expiresIn : process.env.ACCESS_TOKEN_EXPIRY})
+}
+
+//Multer configuration 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const userProfile = multer.diskStorage({
+    destination: (req,file,callback) =>{
+        const uploadPath = path.join(__dirname, "..", "uploads","users");
+        callback(null, uploadPath);   
+    },
+    filename: (req, file, callback) => {
+        callback(null, (`${Date.now()}-${file.originalname}`))
+    }
+})
+
+export const uploadUserProfile = multer({ storage: userProfile});
+
+
+export const deleteUploadedFile = async (file) => {
+  if (file) {
+    try {
+      await fs.unlink(file.path);
+    } catch (err) {
+      console.error("Error deleting file:", err);
+    }
+  }
+};

@@ -8,7 +8,7 @@ const sequelize = new Sequelize('sample','root','Sathiya@2003',{
 
 (async ()=> {
   try {
-      await sequelize.authenticate();
+      await sequelize.authenticate(); 
       console.log('Connection has been established successfully.');
       await sequelize.sync({alter: true});
       console.log('Database & tables created!');

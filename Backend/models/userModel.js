@@ -23,7 +23,11 @@ import  sequelize  from "../config/db.js";
   password :{
     type:DataTypes.STRING,
     allowNull:false
-  }
+  },
+  user_profile:{
+    type:DataTypes.TEXT,
+    allowNull:false
+  },
 },
   {
     timestamps:true
