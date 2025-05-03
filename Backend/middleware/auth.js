@@ -58,9 +58,20 @@ const userProfile = multer.diskStorage({
     filename: (req, file, callback) => {
         callback(null, (`${Date.now()}-${file.originalname}`))
     }
+});
+
+const incomeProof = multer.diskStorage({
+  destination: (req,file,callback) =>{
+    const uploadPath = path.join(__dirname,"..","uploads","proof");
+    callback(null,uploadPath);
+  },
+  filename:(req,file,callback) =>{
+    callback(null, (`${Date.now()}-${file.originalname}`))
+  }
 })
 
 export const uploadUserProfile = multer({ storage: userProfile});
+export const uploadIncomeProof = multer({ storage: incomeProof});
 
 
 export const deleteUploadedFile = async (file) => {

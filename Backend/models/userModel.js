@@ -9,7 +9,7 @@ import  sequelize  from "../config/db.js";
   },
   lastname:{
     type:DataTypes.STRING,
-    allowNull:false
+    allowNull:true
   },
   mobileNo:{
     type:DataTypes.STRING,
