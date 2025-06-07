@@ -1,28 +1,27 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
+import { Category } from "./categoryModel.js";
 
-// const {amount,category,source,description,date,proof} = req.body;
-
- const Income = sequelize.define('Income',{
+export const Expense = sequelize.define('Expense',{
     amount:{
         type:DataTypes.STRING,
         allowNull:false
     },
-    category:{
-        type:DataTypes.STRING,
-        allowNull:false
+    category_id:{
+        type:DataTypes.INTEGER,
+        allowNull:true
     },
     date:{
         type:DataTypes.DATE,
         allowNull:false
     },
-    source:{
-        type:DataTypes.STRING,
-        allowNull:true
-    },
     description:{
         type:DataTypes.STRING,
         allowNull:true
+    },
+    paymentMethod:{
+        type:DataTypes.STRING,
+        allowNull:false
     },
     proof:{
         type:DataTypes.TEXT,
@@ -35,4 +34,6 @@ import sequelize from "../config/db.js";
 
 });
 
-export default Income;
+Category.hasMany(Expense, {foreignKey: 'category_id', as: 'expense'})
+Expense.belongsTo(Category, {foreignKey: 'category_id', as: 'category'})
+// export default Expense;

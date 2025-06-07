@@ -6,4 +6,9 @@ const errorMiddleware = (err, req, res, next) => {
   };
   
   export default errorMiddleware;
+
+export const requiredField = (requiredKeys,next) => {
+  console.log("requiredKeys---",requiredKeys);
+  
+}
   

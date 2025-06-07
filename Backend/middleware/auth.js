@@ -43,9 +43,11 @@ const extractBasicAuthHeaders = (header) => {
 // }
 
 export const generateAccessToken = (payload) =>{
-    return jwt.sign(payload,process.env.SECRET_KEY , { expiresIn : process.env.ACCESS_TOKEN_EXPIRY})
+    return jwt.sign(payload,process.env.SECRET_KEY_ACCESS_TOKEN , { expiresIn : process.env.ACCESS_TOKEN_EXPIRY})
 }
-
+export const generateRefreshToken = (payload) =>{
+    return jwt.sign(payload,process.env.SECRET_KEY_REFRESH_TOKEN , { expiresIn : process.env.REFRESH_TOKEN_EXPIRY})
+}
 //Multer configuration 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

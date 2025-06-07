@@ -28,9 +28,16 @@ import  sequelize  from "../config/db.js";
     type:DataTypes.TEXT,
     allowNull:false
   },
+ 
 },
   {
-    timestamps:true
+    timestamps:true,
+    indexes:[
+      {
+        unique:true,
+        fields:["emailId","mobileNo"]
+      }
+    ]
   }
 )
 export default User;

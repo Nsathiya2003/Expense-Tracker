@@ -18,4 +18,4 @@ const sequelize = new Sequelize('sample','root','Sathiya@2003',{
 })();
 
 export default sequelize;
-
+ 

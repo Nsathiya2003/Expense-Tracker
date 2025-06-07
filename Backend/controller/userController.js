@@ -1,12 +1,15 @@
-import { deleteUploadedFile, generateAccessToken } from "../middleware/auth.js";
+import { deleteUploadedFile, generateAccessToken, generateRefreshToken } from "../middleware/auth.js";
+import { sendError, sendSuccess } from "../middleware/helper.js";
 import User from "../models/userModel.js";
 import bcrypt from 'bcryptjs';
+
+  //All logic's for user
 
   export const createUser = async (req, res) => {
     const user_profile = req.file;
 
     try {
-      const { firstname, lastname, mobileNo, email } = req.body;
+      const { firstname, lastname, mobileNo, emailId } = req.body;
       const password = req.header('password');
 
       if (!password) throw new Error("Password header is missing");
@@ -18,31 +21,21 @@ import bcrypt from 'bcryptjs';
         firstname,
         lastname,
         mobileNo,
-        emailId: email,
+        emailId,
         password: hashedPassword,
         user_profile: user_profile?.filename || null
       });
 
       const { password: _, ...safeUserData } = addUser.dataValues ?? addUser.toJSON();
 
-      return res.status(200).json({
-        status: true,
-        data: safeUserData,
-        message: "Your registration was successful"
-      });
+      return sendSuccess(res,'User created Successfull',safeUserData,201);
 
     } 
     catch (error) {
       await deleteUploadedFile(user_profile);
-      console.error(error);
-      return res.status(500).json({
-        status: false,
-        message: 'Internal Server Error',
-        error: error.message
-      });
+      return sendError(res,'Failed to create User',error.message);
     }
   };
-
 
   export const userLogin = async (req, res) => { 
     try {
@@ -71,16 +64,20 @@ import bcrypt from 'bcryptjs';
         }
       };
       const accessToken = generateAccessToken(payload);
-      console.log("----accessToken----", accessToken);
+      const refreshToken = generateRefreshToken(payload);
+      // console.log("----accessToken----", accessToken);
+      // console.log("----refreshToken----", refreshToken);
 
       const findUser = await User.findOne({
         where: { emailId: email },
-        attributes: { exclude: ['password'] }
+        attributes:  { exclude:"password"}
       });
+      console.log("findUser----",findUser);
 
       const data = {
         user: findUser,
-        accessToken
+        accessToken,
+        refreshToken
       };
 
       res.status(200).json({
@@ -98,4 +95,41 @@ import bcrypt from 'bcryptjs';
       });
     }
   };
+
+  export const updateUser = async (req,res) => {
+    const user_profile = req.file;
+    const user_id = req.params.id;
+
+    try{
+      const {firstname, lastname, mobileNo, emailId } = req.body;
+    
+      if(!user_id){
+        throw new Error ('User id is required')
+      }
+
+      const password = req.header('password');
+      if (!password) throw new Error("Password header is missing");
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+  
+      const user = await User.findOne({ where: {id:user_id}});
+      console.log("---user---",user);
+
+      user.firstname = firstname,
+      user.lastname = lastname,
+      user.mobileNo = mobileNo,
+      user.emailId = emailId,
+      user.password = hashedPassword,
+      user.user_profile = user_profile?.filename || null
+
+      await user.save();
+      return sendSuccess(res,'User updation Successfull',safeUserData);
+
+      }
+    catch(error){
+         return sendError(res,'Failed to update User',error,);
+
+    }
+  }
  
