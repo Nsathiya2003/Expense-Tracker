@@ -1,22 +1,23 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-// https://vitejs.dev/config/
+
 export default defineConfig({
-  // assetsInclude: ['**/*.html'],
-  plugins: [react()],
+
+  plugins: [react()], //using offical react plugin
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "./src"), //instaed of src folder importing we can use @/components/register
     },
   },
 
   server: {
-    host: 'localhost',
-    port: 3500,
+    host: "localhost",//frontend host
+    port: 3000,//forntend server running port
+    // Avoid cors error we give this 
     proxy: {
       "/api": {
-        //  target: "http://localhost:3500/",
+        target: "http://localhost:5000/",
         changeOrigin: true,
       },
     },

@@ -6,6 +6,7 @@ export default function CustomInput({
   value,
   onChange,
   placeholder,
+  inputRef,
   className = "",
   error,
   ...rest
@@ -29,6 +30,7 @@ export default function CustomInput({
           onChange={onChange}
           placeholder={placeholder}
           className={`${className}`}
+          ref = {inputRef}
         />
       </div>
     </>
