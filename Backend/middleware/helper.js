@@ -20,3 +20,12 @@ export const sendError = (res,message='Something went wrong',error=null,code=500
 
     })
 }
+
+export const alreadyExists = (res, field = "Field", code = 400) => {
+  const message = `${field} already exists`;
+  return res.status(code).json({
+    status: false,
+    message,
+    field
+  });
+};

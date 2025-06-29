@@ -1,29 +1,42 @@
-import { formatedDate } from "../middleware/helper.js";
+import { formatedDate, sendError, sendSuccess } from "../middleware/helper.js";
+import { Budget } from "../models/budgetModel.js";
 import { Category } from "../models/categoryModel.js";
 import { Expense } from "../models/expenseModel.js";
 
     export const addExpense = async(req,res) =>{
+          const proof = req.file;
+          const user_id = req.user?.id;
         try{
         const {amount,category_id,date,description,paymentMethod} = req.body;
-        const proof = req.file;
+      
             
         const returnedDate = formatedDate(date);
-        console.log("returnedDate----",returnedDate);
-
         const data = await Expense.create({
             amount,
             category_id,
+            user_id,
             date:returnedDate,
             description,
             paymentMethod,
-            proof:proof?.filename || null
+            proof:proof?.filename || null,
+            user_id
         });
-        res.status(201).json({ message : "Your expense added successfully",data})
-        console.log("data---",data)
+        const findBudget = await Budget.findOne({ where : { category_id: data.category_id}});
+        console.log("findBudget---",findBudget);
+
+        const totalAmount = findBudget.amount;
+
+        const remainingAmount =  findBudget.remaining > 0 ? findBudget.remaining - amount : totalAmount-amount;
+        const spentAmount = Number(findBudget.spent) + Number(amount);
+        findBudget.remaining = remainingAmount;
+        findBudget.spent =spentAmount;
+
+        await findBudget.save();
+        return sendSuccess(res,'Expense created successfully',data,201)
+
         }
         catch(error){
-            console.log("error",error);
-            res.status(500).json({error:"Internal server error"});
+        return sendError(res,'Failed to create expense',error.message)
         }
         
     }
@@ -32,32 +45,39 @@ import { Expense } from "../models/expenseModel.js";
         try{
             const getData = await Expense.findAll({
                  where : { status:'ACTIVE' },
-                 include:[
-                   { 
-                    model: Category,
-                    as:'category',
-                    // attributes: []
-                }
-
-                 ]
+                 include:[{  model: Category,as:'category',}]
                 });
-            return res.json({
-                status:true,
-                message:'Data retrived successfully ',
-                data:getData
-            })
+
+            if(!getData){
+                return sendError(res,'data not found',null,404)
+            }
+            return sendSuccess(res,'Data retrived successfully',getData)
+
         }
         catch(error){
-            res.status(500).json({
-                status:false,
-                message:`Internal server error ${error.message}`
+           return sendError(res,'Failed to fetch expense',error.message)
 
-            })
+        }
+    }
+
+    export const getById = async (req,res) =>{
+        const id = req.params.id;
+        try{
+            const expense = await Expense.findOne({ where : {id:id}});
+            if(!expense){
+            return sendError(res,'Data not found',null,404)
+            }
+            return sendSuccess(res,'data retrived successfully',expense)
+        }
+        catch(error){
+            return sendError(res,'Failed to fetch data',error.message);
         }
     }
 
     export const updateExpense = async (req, res) => {
     const income_id = req.params.id;
+    const user_id = req.user?.id;
+
 
     try {
     const proof = req.file?.filename || null; 
@@ -65,9 +85,10 @@ import { Expense } from "../models/expenseModel.js";
     const returnedDate = formatedDate(date); 
     const data = await Expense.findOne({ where: { id: income_id } });
     if (!data) {
-      return res.status(404).json({ status: false, message: 'Income record not found' });
+     return sendError(res,'data not found',null,404)
     }
     data.amount = amount;
+    data.user_id = user_id;
     data.category_id = category_id;
     data.date = returnedDate;
     data.description = description;
@@ -76,15 +97,12 @@ import { Expense } from "../models/expenseModel.js";
 
     await data.save();
 
-    return res.status(200).json({
-      status: true,
-      message: 'Income updated successfully',
-      data,
-    });
+     return sendSuccess(res,'Data retrived successfully',data,201)
+
 
   } catch (error) {
     console.error("Error updating income:", error);
-    return res.status(500).json({ status: false, message: 'Server error. Could not update income.' });
+        return sendError(res,'Failed to update expense',error.message)
   }
     }
 
@@ -92,19 +110,18 @@ import { Expense } from "../models/expenseModel.js";
         const expense_id = req.params.id;
         try{
             const softDelete = await Expense.findOne({ where: {id:expense_id}});
+            if(!softDelete){
+             return sendError(res,'data not found',null,404)
+            }
             softDelete.status = 'DELETE';
             await softDelete.save();
 
-            return res.status(200).json({
-                status:true,
-                message:'Data deleted successfull',
-                data:softDelete
-            })
+            return sendSuccess(res,'Data deleted successfully',softDelete)
+
         }
         catch(error){
-        res.status(200).json({
-                status:true,
-                message:'Internal server error'
-            })
+               return sendError(res,'Failed to delete expense',error.message)
+
         }
     }
+

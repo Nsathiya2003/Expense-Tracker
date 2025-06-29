@@ -1,5 +1,5 @@
 import { deleteUploadedFile, generateAccessToken, generateRefreshToken } from "../middleware/auth.js";
-import { sendError, sendSuccess } from "../middleware/helper.js";
+import { alreadyExists, sendError, sendSuccess } from "../middleware/helper.js";
 import User from "../models/userModel.js";
 import bcrypt from 'bcryptjs';
 
@@ -9,22 +9,36 @@ import bcrypt from 'bcryptjs';
     const user_profile = req.file;
 
     try {
-      const { firstname, lastname, mobileNo, emailId } = req.body;
-      const password = req.header('password');
-
-      if (!password) throw new Error("Password header is missing");
-
+      const { username, mobileNo, emailId,password } = req.body;
+      // const password = req.header('password');
+      console.log("req.body data is---",req.body);
       const salt = await bcrypt.genSalt(10);
+      console.log("username---",username);
+      console.log("mobile---",mobileNo);
+      console.log("email---",emailId);
+      console.log("password---",password);
+
+      console.log("salt---",user_profile);
+
+
       const hashedPassword = await bcrypt.hash(password, salt);
 
+          console.log("hashedPassword---",hashedPassword);
+
+      const findUser = await User.findOne({
+        where: { emailId: emailId}
+      })
+      if(findUser) {
+          return alreadyExists(res,'Email id');
+      }
       const addUser = await User.create({
-        firstname,
-        lastname,
+        username,
         mobileNo,
         emailId,
         password: hashedPassword,
         user_profile: user_profile?.filename || null
       });
+      console.log("adduser",addUser);
 
       const { password: _, ...safeUserData } = addUser.dataValues ?? addUser.toJSON();
 
@@ -33,35 +47,32 @@ import bcrypt from 'bcryptjs';
     } 
     catch (error) {
       await deleteUploadedFile(user_profile);
+      console.log("error.message",error.message);
       return sendError(res,'Failed to create User',error.message);
     }
   };
 
   export const userLogin = async (req, res) => { 
     try {
-      const { email } = req.body;
-      const password = req.header('password');
-
-      const verifyUser = await User.findOne({ where: { emailId: email } });
+      const { emailId,password } = req.body;
+      // const password = req.header('password');
+      console.log("body is",req.body);
+      console.log("EmailId iss",emailId);
+      const verifyUser = await User.findOne({ where: { emailId: emailId } });
+      console.log("verifyUser--",verifyUser);
       if (!verifyUser) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found"
-        }); 
+        return sendError(res,"User not found",null,404)
       }
       const isMatch = await bcrypt.compare(password, verifyUser.password);
       if (!isMatch) {
-        return res.status(400).json({
-          success: false,
-          message: "Password does not match"
-        });
+        return sendError(res,"Password does not match",null,404)
+
       }
 
       const payload = {
-        user: {
           id: verifyUser.id,
           role: 'user'
-        }
+        
       };
       const accessToken = generateAccessToken(payload);
       const refreshToken = generateRefreshToken(payload);
@@ -69,7 +80,7 @@ import bcrypt from 'bcryptjs';
       // console.log("----refreshToken----", refreshToken);
 
       const findUser = await User.findOne({
-        where: { emailId: email },
+        where: { emailId: emailId },
         attributes:  { exclude:"password"}
       });
       console.log("findUser----",findUser);
@@ -114,7 +125,9 @@ import bcrypt from 'bcryptjs';
       const hashedPassword = await bcrypt.hash(password, salt);
   
       const user = await User.findOne({ where: {id:user_id}});
-      console.log("---user---",user);
+        if(!user){
+          return sendError(res,'User data not found',null,404)
+        }
 
       user.firstname = firstname,
       user.lastname = lastname,
@@ -130,6 +143,20 @@ import bcrypt from 'bcryptjs';
     catch(error){
          return sendError(res,'Failed to update User',error,);
 
+    }
+  }
+
+  export const getById = async (req,res) => {
+    const id = req.params.id;
+    try{ 
+     const user = await User.findOne({ where : { id: id}});
+      if(!user){
+      return sendError(res,'User not found',null,404);
+      }
+      return sendSuccess(res,'User retrived successfully',user);
+    }
+    catch(error){
+      return sendError(res,'Failed to fetch user',error.message)
     }
   }
  

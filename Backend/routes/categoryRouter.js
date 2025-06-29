@@ -1,12 +1,15 @@
 import express from 'express';
-import { createCategory, getAll } from '../controller/categoryController.js';
+import { createCategory, deleteCategory, getAll, getById, updateCategory } from '../controller/categoryController.js';
+import { AuthenticateUser } from '../middleware/auth.js';
 
-export const categoryRouter = express.Router();
+export const categoryRouter = express.Router()
 
-categoryRouter.post('/add',createCategory);
+categoryRouter.post('/add',AuthenticateUser,createCategory)
 
-categoryRouter.get('/getAll',getAll);
+categoryRouter.get('/getAll',AuthenticateUser,getAll)
 
-categoryRouter.put('/api/update/:id',updateCategory)
+categoryRouter.get('/getById/:id',AuthenticateUser,getById)
 
-// categoryRouter.
+categoryRouter.put('/update/:id',AuthenticateUser,updateCategory)
+
+categoryRouter.delete('/delete/:id',AuthenticateUser,deleteCategory)

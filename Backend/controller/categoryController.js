@@ -2,14 +2,16 @@ import { sendError, sendSuccess } from "../middleware/helper.js";
 import { Category } from "../models/categoryModel.js"
 
     export const createCategory = async (req,res) => {
+        const user_id = req.user?.id;
         try{
             const {name,description} = req.body;
             console.log("name----",name)
             const category = await Category.create({
                 name:name,
-                description:description
+                description:description,
+                user_id:user_id
             });
-            return sendSuccess(res,'Category created successfully',category)
+            return sendSuccess(res,'Category created successfully',category,201)
         }
         catch(error){
             return sendError(res,'Failed to create category',error.message);
@@ -18,7 +20,7 @@ import { Category } from "../models/categoryModel.js"
 
     export const  getAll = async (req,res) =>{
         try{
-            const category = await Category.findAll();
+            const category = await Category.findAll({ where : { status:"ACTIVE" } });
             return sendSuccess(res,'All data retrived successfully',category)
         }
         catch(error){
@@ -26,8 +28,24 @@ import { Category } from "../models/categoryModel.js"
         }
     }
 
+    export const getById = async (req,res) => {
+        const id = req.params.id;
+        try{
+            const category = await Category.findOne({ where : { id: id}});
+            if(!category){
+                throw new Error ('No category found for your provided id');
+            }
+            return sendSuccess(res,'Category retrived successfully',category)
+        }
+        catch(error){
+            return sendError(res,'Failed to fetch category',error.message)
+        }
+    }
+
     export const updateCategory = async (req,res) =>{
         const id = req.params.id;
+        const user_id = req.user?.id;
+
         try{
             const { name,description } = req.body;
             const category = await Category.findOne({
@@ -35,7 +53,8 @@ import { Category } from "../models/categoryModel.js"
             });
             if(category){
                 category.name = name,
-                category.description = description
+                category.description = description,
+                
                 await category.save();
             }
             return sendSuccess(res,'Category updated sucessfully',category)
@@ -44,3 +63,18 @@ import { Category } from "../models/categoryModel.js"
             return sendError(res,'Failed to Update',error.message)
         }
     }
+
+    export const deleteCategory = async (req,res) =>{
+        const id = req.params.id;
+        try{
+            const category = await Category.findOne({where : { id : id}});
+            category.status = 'DELETE';
+            await category.save();
+
+            return sendSuccess(res,'Category deleted successfully',category)
+        }
+        catch(error){
+            return sendError(res,'Failed to delete category',error.message)
+        }
+    }
+    

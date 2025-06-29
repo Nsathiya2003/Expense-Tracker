@@ -2,15 +2,19 @@ import { DataTypes } from "sequelize";
 import  sequelize  from "../config/db.js";
 
  const User = sequelize.define('User',{
-
-  firstname:{
+    id:{
+        type:DataTypes.INTEGER,
+        primaryKey:true,
+        autoIncrement:true
+    },
+  username:{
     type:DataTypes.STRING,
     allowNull:false
   },
-  lastname:{
-    type:DataTypes.STRING,
-    allowNull:true
-  },
+  // lastname:{
+  //   type:DataTypes.STRING,
+  //   allowNull:true
+  // },
   mobileNo:{
     type:DataTypes.STRING,
     allowNull:false
@@ -26,7 +30,7 @@ import  sequelize  from "../config/db.js";
   },
   user_profile:{
     type:DataTypes.TEXT,
-    allowNull:false
+    allowNull:true
   },
  
 },

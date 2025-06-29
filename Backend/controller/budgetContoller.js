@@ -4,16 +4,17 @@ import { Budget } from "../models/budgetModel.js";
 import { Category } from "../models/categoryModel.js";
 
     export const createBudget = async(req,res) =>{
+        const user_id = req.user.id;
         try{
-        const { month,amount,category_id,user_id,date} = req.body;
+        const { month,amount,category_id,date} = req.body;
         const budget = await Budget.create({
             month:month,
             amount:amount,
             date:date,
             category_id:category_id,
-            user_id:user_id,
             remaining:amount,
-            spent:0
+            spent:0,
+            user_id
         })
         return sendSuccess(res,'Budget created successfully',budget,201)
         }

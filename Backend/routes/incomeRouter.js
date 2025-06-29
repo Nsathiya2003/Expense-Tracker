@@ -1,13 +1,15 @@
 import express from 'express';
-import { addIncome, deleteIncome, getAll, updateIncome } from '../controller/incomeController.js';
-import { uploadIncomeProof } from '../middleware/auth.js';
+import { addIncome, deleteIncome, getAll, getById, updateIncome } from '../controller/incomeController.js';
+import { AuthenticateUser, uploadIncomeProof } from '../middleware/auth.js';
 
 export const incomeRouter = express.Router();
 
-incomeRouter.post('/add',uploadIncomeProof.single('proof'),addIncome);
+incomeRouter.post('/add',uploadIncomeProof.single('proof'),AuthenticateUser, addIncome)
 
-incomeRouter.get('/getAll',getAll);
+incomeRouter.get('/getAll',AuthenticateUser,getAll)
 
-incomeRouter.put('/update/:id',uploadIncomeProof.single('proof'),updateIncome)
+incomeRouter.get('/getById/:id',AuthenticateUser,getById)
 
-incomeRouter.delete('/delete/:id',deleteIncome)
+incomeRouter.put('/update/:id',AuthenticateUser,uploadIncomeProof.single('proof'),updateIncome)
+
+incomeRouter.delete('/delete/:id',AuthenticateUser,deleteIncome)

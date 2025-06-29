@@ -4,6 +4,15 @@ import sequelize from "../config/db.js";
 // const {amount,category,source,description,date,proof} = req.body;
 
  const Income = sequelize.define('Income',{
+    id:{
+        type:DataTypes.INTEGER,
+        primaryKey:true,
+        autoIncrement:true
+    },
+    user_id:{
+        type:DataTypes.INTEGER,
+        allowNull:false
+    },
     amount:{
         type:DataTypes.STRING,
         allowNull:false

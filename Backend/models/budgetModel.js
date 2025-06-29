@@ -3,7 +3,15 @@ import sequelize from "../config/db.js";
 import { Category } from "./categoryModel.js";
 
 export const Budget = sequelize.define('Budget', {
-
+    id:{
+        type:DataTypes.INTEGER,
+        primaryKey:true,
+        autoIncrement:true
+    },
+    user_id:{
+        type:DataTypes.INTEGER,
+        allowNull:false
+    },
     month:{
         type:DataTypes.STRING,
         allowNull:false
