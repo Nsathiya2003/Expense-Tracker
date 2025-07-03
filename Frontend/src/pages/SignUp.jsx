@@ -4,6 +4,7 @@ import expense from "../assets/expense4.jpg";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { useRef } from "react";
 import { createUser, useCustomMutation } from "../api/apiServices/userService";
+import { toast, ToastContainer } from "react-toastify";
 // import '../App.css';
 
 export default function SignUp() {
@@ -63,11 +64,35 @@ export default function SignUp() {
 
   const mutation = useCustomMutation(createUser, {
     onSuccess:(data) => {
-      console.log("User created successfull",data);
+      console.log("User created successfull",data?.data?.message);
+      if(data?.data?.status){
+       toast.success(data?.data?.message,{
+        position:'top-center',
+        autoClose:3000,
+        hideProgressBar:false,
+        pauseOnHover:false,
+        draggable:false,
+        closeOnClick:false,
+        // isLoading:true,
+        progress:undefined,
+        className:'custom-toast'
+       })
       resetForm();
+      }
     },
     onError:(error) =>{
-      console.log("Error creating user",error.message);
+      console.log("Error creating user",error?.response?.data?.message);
+       toast.error(error?.response?.data?.message,{
+        position:'top-center',
+        autoClose:3000,
+        hideProgressBar:false,
+        pauseOnHover:false,
+        draggable:false,
+        closeOnClick:false,
+        // isLoading:true,
+        progress:undefined,
+        className:'custom-toast'
+       })
     }
   })
 
@@ -165,11 +190,12 @@ export default function SignUp() {
                 Create account
               </button>
             </div>
-            <div className="image-box">
+            {/* <div className="image-box">
               <img src={expense} alt="signup-visual" />
-            </div>
+            </div> */}
           </div>
         </form>
+         <ToastContainer/>
       </div>
     </>
   );
