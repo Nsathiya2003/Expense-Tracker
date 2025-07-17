@@ -115,7 +115,7 @@ export default function SignUp() {
           <div className="form-wrapper">
             <div className="input-fields">
               <h4 className="head">SignUp Form </h4>
-               <p className='para-log'>Already have an account? <a href="/">Login</a></p>
+               <p className='para-log'>Already have an account? <a href="/login">Login</a></p>
               <CustomInput
                 // label='First Name'
                 type="text"
