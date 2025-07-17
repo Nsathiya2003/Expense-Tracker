@@ -3,6 +3,9 @@ import CustomInput from "../components/customInput";
 import expense from "../assets/expense4.jpg";
 import {login, useCustomMutation } from "../api/apiServices/userService";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
+
 // import '../App.css';
 
 export default function Login() {
@@ -10,6 +13,7 @@ export default function Login() {
   emailId: "",
   password: "",
 });
+const navigate = useNavigate();
   const focusRef = useRef(null);
 
   //for focus the input field user should start typing
@@ -52,6 +56,7 @@ export default function Login() {
         className:'custom-toast'
        })
        resetForm();
+       navigate('/dashboard')
       }
     },
     onError:(error) =>{
