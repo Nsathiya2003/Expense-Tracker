@@ -15,7 +15,9 @@ const userProfile = multer.diskStorage({
     callback(null, uploadPath);
   },
   filename: (req, file, callback) => {
-    callback(null, `${Date.now()}-${file.originalname}`);
+    const user_id = req.user?.id || 'unknown';
+    console.log("user_idd----",user_id);
+    callback(null, `${user_id}-${Date.now()}-${file.originalname}`);
   },
 });
 

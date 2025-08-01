@@ -19,8 +19,9 @@ import { Category } from "../models/categoryModel.js"
     }
 
     export const  getAll = async (req,res) =>{
+            const user_id = req.user.id;
         try{
-            const category = await Category.findAll({ where : { status:"ACTIVE" } });
+            const category = await Category.findAll({ where : { status:"ACTIVE",user_id: user_id } });
             return sendSuccess(res,'All data retrived successfully',category)
         }
         catch(error){
@@ -54,7 +55,7 @@ import { Category } from "../models/categoryModel.js"
             if(category){
                 category.name = name,
                 category.description = description,
-                
+                category.user_id = user_id
                 await category.save();
             }
             return sendSuccess(res,'Category updated sucessfully',category)
@@ -68,8 +69,9 @@ import { Category } from "../models/categoryModel.js"
         const id = req.params.id;
         try{
             const category = await Category.findOne({where : { id : id}});
-            category.status = 'DELETE';
-            await category.save();
+            const deleted = await category.destroy(id);
+              console.log("deleted----",deleted);   
+             await category.save();
 
             return sendSuccess(res,'Category deleted successfully',category)
         }

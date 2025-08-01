@@ -42,7 +42,7 @@ import bcrypt from 'bcryptjs';
 
       const { password: _, ...safeUserData } = addUser.dataValues ?? addUser.toJSON();
 
-      return sendSuccess(res,'User created Successfull',safeUserData,201);
+      return sendSuccess(res,'Account Created Successfully',safeUserData,201);
 
     } 
     catch (error) {
@@ -93,7 +93,7 @@ import bcrypt from 'bcryptjs';
 
       res.status(200).json({
         success: true, 
-        message: "Login success",
+        message: "Your account logged in successfully",
         data
       });
 

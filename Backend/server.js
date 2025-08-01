@@ -7,12 +7,18 @@ import { incomeRouter } from './routes/incomeRouter.js';
 import { expenseRouter } from './routes/expenseRouter.js';
 import { categoryRouter } from './routes/categoryRouter.js';
 import { budgetRouter } from './routes/budgetRouter.js';
-
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+console.log("dire name---",__dirname);
 
 //connect frontend to backend
 app.use(cors());
@@ -31,6 +37,12 @@ app.use('/api/expense', expenseRouter)
 app.use('/api/budget',budgetRouter)
 //master
 app.use('/api/master/category',categoryRouter)
+
+//serve the files 
+app.use('/uploads',express.static(path.join('uploads')))
+
+// app.use('/proof',express.static(path.join(__dirname,'uploads/proof')))
+// app.use('/users',express.static(path.join(__dirname,'uploads/users')))
 
 
 //  middleware for unmatched routes (404 logger)
