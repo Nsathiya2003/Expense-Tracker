@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export const useCustomQuery = ({ key,fetchfn,enabled=true})=>{
   return useQuery({
@@ -14,21 +16,37 @@ export const useCustomQuery = ({ key,fetchfn,enabled=true})=>{
   })
 }
 
-export const useCustomMutation = ({ key,mutatefn,successmsg}) =>{
-    const queryClient = useQueryClient();
-    return useMutation({
-     mutationFn:mutatefn,
-     onSuccess: (data) =>{
-        console.log("data is----",data);
-        toast.success(successmsg || 'Success');
-        if(key){
-          queryClient.invalidateQueries(key);
-        }
-     },
-     onError: (err) => {
-        toast.error(err || 'Something went wrong');
-     },
-    })
-}
+export const useCustomMutation = ({ mutatefn, resetfn, navigate, navigatePath, invalidateKey }) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: mutatefn,
+    onSuccess: (data) => {
+      const message = data?.message || 'Successfull';
+      toast.success(message, {
+        position: 'top-center',
+        autoClose: 3000,
+        className: 'custom-toast'
+      });
+
+      if (invalidateKey) {
+        queryClient.invalidateQueries(invalidateKey);
+      }
+
+      if (navigate) {
+        setTimeout(() => {
+          resetfn?.();
+          navigate(navigatePath || -1);
+        }, 1000); 
+      }
+    },
+    onError: (err) => {
+      toast.error(err?.message || 'Something went wrong');
+    }
+  });
+};
+
+
+
 
 

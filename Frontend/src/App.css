@@ -1,10 +1,12 @@
+@import "tailwindcss";
+
 body{
-  /* background-color: rgb(32, 30, 30); */
-  /* background-color: #0A0A0A; */
+  background-color: rgb(32, 30, 30);
+   background-color: #0A0A0A;
 }
-/* :root{
+:root{
   ---primary-text-color:#f
-} */
+} 
 
 .form {
   display: flex;

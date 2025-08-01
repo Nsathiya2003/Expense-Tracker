@@ -1,25 +1,28 @@
 import { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addCategory, getCategoryById, updateCategory } from '../api/apiServices/userService';
+import { useCustomMutation } from '../api/apiServices/customFunction';
+import {
+  addCategory,
+  getCategoryById,
+  updateCategory,
+} from '../api/apiServices/userService';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function AddCategory({ open, onClose, updatedData }) {
-  const queryClient = useQueryClient();
   const isEditMode = Boolean(updatedData?.id || updatedData?._id);
+  const [data, setData] = useState({ name: '', description: '' });
 
-  const [data, setData] = useState({
-    name: '',
-    description: '',
-  });
+  const resetForm = () => {
+    setData({ name: '', description: '' });
+  };
 
   useEffect(() => {
-    setData({ name: '', description: '' });
+    resetForm();
 
     if (open && isEditMode) {
       const fetchCategory = async () => {
         try {
-          const res = await getCategoryById(updatedData?.id || updatedData?._id);
+          const res = await getCategoryById(updatedData.id || updatedData._id);
           const category = res?.data;
           setData({
             name: category?.name || '',
@@ -33,6 +36,38 @@ export default function AddCategory({ open, onClose, updatedData }) {
     }
   }, [open, isEditMode, updatedData]);
 
+  // Add Mutation
+  const addCategoryMutation = useCustomMutation({
+    mutatefn: addCategory,
+    resetfn: () => {
+      resetForm();
+      onClose();
+    },
+    invalidateKey: ['category'],
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || 'Category added successfully');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to add category');
+    },
+  });
+
+  // Update Mutation
+  const updateCategoryMutation = useCustomMutation({
+    mutatefn: ({ id, updatedData }) => updateCategory(id, updatedData),
+    resetfn: () => {
+      resetForm();
+      onClose();
+    },
+    invalidateKey: ['category'],
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || 'Category updated successfully');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to update category');
+    },
+  });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setData((prev) => ({
@@ -41,49 +76,21 @@ export default function AddCategory({ open, onClose, updatedData }) {
     }));
   };
 
-  const handleSuccess = (res) => {
-    toast.success(res?.message || 'Success', {
-      position: 'top-center',
-      autoClose: 3000,
-    });
-    queryClient.invalidateQueries({ queryKey: ['category'] });
-    setData({ name: '', description: '' });
-    onClose();
-  };
-
-  const handleError = (err) => {
-    toast.error(err?.response?.data?.message || 'Something went wrong', {
-      position: 'top-center',
-      autoClose: 3000,
-    });
-  };
-
-  const addMutation = useMutation({
-    mutationFn: addCategory,
-    onSuccess: handleSuccess,
-    onError: handleError,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, updatedData }) => updateCategory(id, updatedData),
-    onSuccess: handleSuccess,
-    onError: handleError,
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!data.name.trim()) {
       toast.warn('Category name is required', { position: 'top-center' });
       return;
     }
 
     if (isEditMode) {
-      updateMutation.mutate({
+      updateCategoryMutation.mutate({
         id: updatedData.id || updatedData._id,
         updatedData: data,
       });
     } else {
-      addMutation.mutate(data);
+      addCategoryMutation.mutate(data);
     }
   };
 
@@ -92,7 +99,7 @@ export default function AddCategory({ open, onClose, updatedData }) {
   return (
     <>
       <ToastContainer />
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 backdrop-blur-sm bg-black/20 flex items-center justify-center z-50">
         <div className="bg-zinc-800 p-8 rounded-xl w-full max-w-md shadow-lg">
           <h2 className="text-white text-2xl font-bold mb-4">
             {isEditMode ? 'Edit Category' : 'Add Category'}
@@ -108,7 +115,7 @@ export default function AddCategory({ open, onClose, updatedData }) {
             />
             <textarea
               name="description"
-              placeholder="Description"
+              placeholder="Description (optional)"
               className="px-4 py-2 rounded-lg bg-zinc-700 text-white resize-none focus:outline-none"
               rows="4"
               onChange={handleChange}
@@ -117,9 +124,9 @@ export default function AddCategory({ open, onClose, updatedData }) {
             <div className="flex justify-end space-x-2 pt-2">
               <button
                 type="button"
-                className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded-lg"
+                className="bg-gray-500 cursor-pointer hover:bg-gray-400 text-white px-4 py-2 rounded-lg"
                 onClick={() => {
-                  setData({ name: '', description: '' });
+                  resetForm();
                   onClose();
                 }}
               >
@@ -127,9 +134,9 @@ export default function AddCategory({ open, onClose, updatedData }) {
               </button>
               <button
                 type="submit"
-                className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg"
+                className="bg-green-600 cursor-pointer hover:bg-green-500 text-white px-4 py-2 rounded-lg"
               >
-                {isEditMode ? 'Update' : 'Save'}
+                {isEditMode ? 'Update Category' : 'Save Category'}
               </button>
             </div>
           </form>
